@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Logo + Background Demo</title>
+<style>
+  :root{
+    --bg-img: url("https://pbs.twimg.com/profile_images/1950265537784926208/qbjSWMDP_400x400.jpg");
+    --accent: rgba(0,200,255,0.12);
+    --glass: rgba(255,255,255,0.06);
+  }
+
+  /* reset */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body,#app{height:100%}
+  body{
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: #0b0f14;
+    color: #e9f0f6;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* full-screen container */
+  .hero{
+    min-height:100vh;
+    width:100%;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px;
+  }
+
+  /* repeated logo pattern (blurred and desaturated) */
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(255,255,255,0.02), transparent 10%),
+      var(--bg-img);
+    background-repeat: repeat;
+    background-size: 240px; /* change to make pattern denser/sparser */
+    background-position: center;
+    filter: grayscale(1) blur(6px) contrast(0.9) brightness(0.55);
+    transform: scale(1.05);
+    opacity:0.95;
+    z-index:0;
+  }
+
+  /* gradient overlay for color toning */
+  .hero::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: linear-gradient(135deg, rgba(6,18,30,0.6), rgba(10,24,40,0.65) 45%, rgba(2,8,20,0.5));
+    z-index:1;
+    pointer-events:none;
+  }
+
+  /* central card */
+  .card{
+    position:relative;
+    z-index:5;
+    width:min(980px, 96%);
+    max-width:1100px;
+    padding:28px;
+    border-radius:18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: 0 10px 40px rgba(2,10,20,0.6);
+    display:flex;
+    gap:28px;
+    align-items:center;
+    backdrop-filter: blur(6px) saturate(120%);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* left: logo block */
+  .logo-wrap{
+    width:220px;
+    min-width:160px;
+    height:220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  .logo{
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    overflow:hidden;
+    display:inline-block;
+    border: 6px solid rgba(255,255,255,0.06);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 40px rgba(0,200,255,0.08) inset;
+    transform-origin:center;
+    animation: slow-rotate 16s linear infinite;
+  }
+
+  .logo img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    transform: translateZ(0);
+  }
+
+  /* a subtle orbit ring behind the logo */
+  .orbit{
+    position:absolute;
+    inset:auto;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:300px;
+    height:300px;
+    border-radius:50%;
+    border: 1px dashed rgba(255,255,255,0.03);
+    filter: blur(12px);
+    z-index:-1;
+    animation: orbit-rotate 30s linear infinite reverse;
+    opacity:0.6;
+  }
+
+  /* right: content */
+  .content{
+    flex:1;
+    min-width:0;
+  }
+
+  h1{
+    font-size: clamp(28px, 5.2vw, 48px);
+    letter-spacing: -1px;
+    margin-bottom:8px;
+    font-weight:700;
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+
+  /* headline animated text (letters) */
+  .project-name{
+    display:inline-block;
+    perspective:900px;
+  }
+
+  .project-name .char{
+    display:inline-block;
+    transform-origin:center;
+    animation: float-letter 3.2s ease-in-out infinite;
+    display:inline-block;
+    padding:0 2px;
+  }
+
+  /* stagger effect using nth-child */
+  .project-name .char:nth-child(1){ animation-delay:0s }
+  .project-name .char:nth-child(2){ animation-delay:0.08s }
+  .project-name .char:nth-child(3){ animation-delay:0.16s }
+  .project-name .char:nth-child(4){ animation-delay:0.24s }
+  .project-name .char:nth-child(5){ animation-delay:0.32s }
+  .project-name .char:nth-child(6){ animation-delay:0.40s }
+  .project-name .char:nth-child(7){ animation-delay:0.48s }
+  .project-name .char:nth-child(8){ animation-delay:0.56s }
+
+  p.lead{
+    margin-top:6px;
+    color: rgba(230,240,255,0.85);
+    font-size: 15px;
+    line-height:1.45;
+    margin-bottom:18px;
+  }
+
+  /* small action row */
+  .row{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .btn{
+    padding:10px 16px;
+    border-radius:10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor:pointer;
+    color: inherit;
+    font-weight:600;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .btn:active{ transform: translateY(1px) }
+  .btn.primary{
+    background: linear-gradient(90deg, rgba(0,190,255,0.14), rgba(0,120,255,0.08));
+    box-shadow: 0 6px 24px rgba(0,140,255,0.06);
+    border: 1px solid rgba(0,140,255,0.12);
+  }
+
+  /* tiny helper */
+  .meta{
+    color: rgba(230,240,255,0.6);
+    font-size:13px;
+    padding-left:8px;
+  }
+
+  /* keyframes */
+  @keyframes slow-rotate{
+    from{ transform: rotate(0deg) }
+    to{ transform: rotate(360deg) }
+  }
+
+  @keyframes orbit-rotate{
+    from{ transform: translate(-50%,-50%) rotate(0deg) }
+    to{ transform: translate(-50%,-50%) rotate(360deg) }
+  }
+
+  @keyframes float-letter{
+    0%{ transform: translateY(0px) rotateX(0deg) }
+    50%{ transform: translateY(-8px) rotateX(18deg) }
+    100%{ transform: translateY(0px) rotateX(0deg) }
+  }
+
+  /* responsive tweaks */
+  @media (max-width:760px){
+    .card{ flex-direction:column; padding:20px; gap:16px; align-items:center }
+    .logo-wrap{ width:160px; height:160px }
+    .orbit{ display:none }
+    .project-name .char:nth-child(n){ animation-delay: calc(var(--i) * 0.06s) }
+  }
+
+  /* small footer text */
+  .credit{
+    position: absolute;
+    bottom:14px;
+    left:16px;
+    z-index:6;
+    font-size:12px;
+    color: rgba(255,255,255,0.5);
+  }
+
+</style>
+</head>
+<body>
+  <div id="app">
+    <main class="hero">
+
+      <div class="card" role="region" aria-label="project preview card">
+
+        <div class="logo-wrap" aria-hidden="false">
+          <div class="orbit" aria-hidden="true"></div>
+          <div class="logo" title="Logo">
+            <!-- same URL used as logo image; change if you have a dedicated logo -->
+            <img src="https://pbs.twimg.com/profile_images/1950265537784926208/qbjSWMDP_400x400.jpg" alt="Logo image">
+          </div>
+        </div>
+
+        <div class="content">
+          <!-- Change the text "RIALO" below if you want a different project name -->
+          <h1>
+            <span class="project-name" id="projectName" aria-hidden="false"></span>
+            <span class="meta">— Professional Game Tool</span>
+          </h1>
+
+          <p class="lead">
+            Ye ek demo layout hai jo tumhare diye hue profile image ko background pattern aur center logo dono jagah use karta hai.
+            Is template ko customize karo: background density, logo size, aur text ko badalna bahut aasaan hai.
+          </p>
+
+          <div class="row">
+            <button class="btn primary" onclick="downloadPNG()">Export preview</button>
+            <button class="btn" onclick="toggleSpin()">Toggle logo spin</button>
+            <div class="meta">Tip: edit the &lt;img&gt; src to use a different logo.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="credit">Made with ❤ — change text & image as needed</div>
+    </main>
+  </div>
+
+<script>
+  // ====== Project-name letter splitting + small staggered animation ======
+  // Default name (I used "RIALO" based on earlier convo). Change as desired:
+  const name = "RIALO"; // <-- change this to your project name
+  const projectEl = document.getElementById('projectName');
+
+  // Build spans for each character with CSS variable for index (used in small responsive tweak)
+  projectEl.innerHTML = '';
+  for (let i=0;i<name.length;i++){
+    const ch = document.createElement('span');
+    ch.className = 'char';
+    ch.textContent = name[i];
+    ch.style.setProperty('--i', i);
+    projectEl.appendChild(ch);
+  }
+
+  // ====== Controls ======
+  const logo = document.querySelector('.logo');
+  let spinning = true;
+  function toggleSpin(){
+    spinning = !spinning;
+    if(spinning){
+      logo.style.animationPlayState = 'running';
+    } else {
+      logo.style.animationPlayState = 'paused';
+    }
+  }
+
+  // ====== Export simple PNG preview (uses html2canvas approach imitation) ======
+  // Note: using an external lib would be better; here we implement a minimal fallback
+  function downloadPNG(){
+    // Try to open a new window with a simple snapshot made from SVG foreignObject
+    const card = document.querySelector('.card');
+    const rect = card.getBoundingClientRect();
+    const clone = card.cloneNode(true);
+    // inline styles so it renders similarly
+    clone.style.width = rect.width+'px';
+    clone.style.height = rect.height+'px';
+    clone.style.margin = '0';
+    // create an SVG that contains the HTML (foreignObject) - modern browsers only
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}">
+      <foreignObject width="100%" height="100%">
+        ${new XMLSerializer().serializeToString(clone).replace(/#/g, '%23')}
+      </foreignObject>
+    </svg>`;
+    const blob = new Blob([svg], {type:'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'preview.svg';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert('Preview exported as SVG (best for quick export). For PNG use a full html2canvas script.');
+  }
+
+  // Accessibility: stop heavy motion if user prefers reduced motion
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    document.querySelectorAll('.logo, .orbit, .char').forEach(el=>{
+      el.style.animationDuration = '0.001s';
+      el.style.animationPlayState = 'paused';
+    });
+  }
+
+</script>
+</body>
+</html>
