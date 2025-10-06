@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Runner Game Full</title>
+<title>Anime Runner Game Top Logo</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;font-family:sans-serif;background:#0b0f14;}
@@ -13,16 +13,16 @@ canvas{display:block;}
 #score{position:absolute;top:16px;left:16px;font-size:24px;color:#00ffff;text-shadow:1px 1px 3px black;}
 #gameOver{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:36px;color:red;display:none;text-shadow:2px 2px 5px black;text-align:center;}
 
-/* RIALO logo */
+/* RIALO logo on top */
 #logo{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:180px;height:180px;border-radius:50%;overflow:hidden;
+  position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  width:120px;height:120px;border-radius:50%;overflow:hidden;
   border:5px solid rgba(255,255,255,0.1);
   box-shadow:0 0 40px rgba(0,200,255,0.2),0 0 60px rgba(0,255,255,0.1) inset;
   animation: rotateLogo 16s linear infinite;
 }
 #logo img{width:100%;height:100%;object-fit:cover;}
-@keyframes rotateLogo{0%{transform:translate(-50%,-50%) rotate(0deg);}100%{transform:translate(-50%,-50%) rotate(360deg);}}
+@keyframes rotateLogo{0%{transform:translateX(-50%) rotate(0deg);}100%{transform:translateX(-50%) rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -49,20 +49,24 @@ let player={
     gravity:1.2,
     jumpForce:20,
     grounded:true,
-    frame:0,
-    sprite:null
+    frameX:0,
+    frameY:0,
+    sprite:null,
+    spriteWidth:48,
+    spriteHeight:48,
+    scale:2
 };
 
 let obstacles=[];
-let obstacleInterval=120; // frames between obstacles
+let obstacleInterval=120;
 let obstacleTimer=0;
 let gameSpeed=6;
 let score=0;
 let gameOver=false;
 
-// Load anime character sprite (example placeholder)
+// ---------------- Load Anime Sprite Sheet ----------------
 player.sprite = new Image();
-player.sprite.src = 'https://i.ibb.co/4Zx6b7x/anime-runner.png'; // Replace with real sprite
+player.sprite.src = 'https://i.ibb.co/4Zx6b7x/anime-runner.png'; // Replace with real running sprite sheet
 
 // ---------------- Floating Background ----------------
 let floatingElements=[];
@@ -81,8 +85,20 @@ for(let i=0;i<numElements;i++){
 // ---------------- Draw Functions ----------------
 function drawPlayer(){
     if(player.sprite.complete){
-        ctx.drawImage(player.sprite,player.x,player.y,player.width,player.height);
-    }else{
+        ctx.drawImage(
+            player.sprite,
+            player.frameX*player.spriteWidth,
+            player.frameY*player.spriteHeight,
+            player.spriteWidth,
+            player.spriteHeight,
+            player.x,
+            player.y,
+            player.spriteWidth*player.scale,
+            player.spriteHeight*player.scale
+        );
+        // animate frames
+        if(player.frameX<3) player.frameX++; else player.frameX=0;
+    } else{
         ctx.fillStyle='#ffcc00';
         ctx.fillRect(player.x,player.y,player.width,player.height);
     }
