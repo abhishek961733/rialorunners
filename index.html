@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ultimate RIALO Runner</title>
+<title>THR RIALO Ultimate Horse Runner</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:#0b0f14;font-family:sans-serif;}
@@ -42,23 +42,36 @@ canvas.height=window.innerHeight;
 // ---------------- Game Variables ----------------
 let player={
     x:150,
-    y:canvas.height-100,
-    radius:40,
+    y:canvas.height-120,
+    width:80,
+    height:60,
+    dx:0,
     dy:0,
     gravity:1.2,
     jumpForce:20,
     grounded:true,
-    squash:0
+    jumpCount:0,
+    maxJumps:2,
+    sprite:null,
+    frameX:0,
+    frameY:0,
+    spriteWidth:64,
+    spriteHeight:64,
+    scale:1.2
 };
 
 let obstacles=[];
-let obstacleInterval=100;
+let obstacleInterval=120;
 let obstacleTimer=0;
 let gameSpeed=6;
 let score=0;
 let gameOver=false;
 
-// ---------------- Background ----------------
+// ---------------- Load Horse Sprite ----------------
+player.sprite = new Image();
+player.sprite.src = 'https://i.ibb.co/4Zx6b7x/anime-runner.png'; // Replace with horse running sprite sheet
+
+// ---------------- Background Layers ----------------
 let backgroundLayers=[];
 for(let i=0;i<3;i++){
     let layer=[];
@@ -76,25 +89,23 @@ for(let i=0;i<3;i++){
 
 // ---------------- Draw Functions ----------------
 function drawPlayer(){
-    // Squash/stretch effect
-    let radiusX=player.radius*(1+player.squash);
-    let radiusY=player.radius*(1-player.squash);
-
-    let gradient=ctx.createRadialGradient(player.x+player.radius/2,player.y+player.radius/2,5,player.x+player.radius/2,player.y+player.radius/2,player.radius);
-    gradient.addColorStop(0,"#00ffff");
-    gradient.addColorStop(1,"#004466");
-    ctx.fillStyle=gradient;
-    ctx.beginPath();
-    ctx.ellipse(player.x+player.radius/2,player.y+player.radius/2,radiusX,radiusY,0,0,Math.PI*2);
-    ctx.fill();
-    ctx.closePath();
-
-    // RIALO Text
-    ctx.fillStyle="#ffffff";
-    ctx.font="bold 16px sans-serif";
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillText("RIALO",player.x+player.radius/2,player.y+player.radius/2);
+    if(player.sprite.complete){
+        ctx.drawImage(
+            player.sprite,
+            player.frameX*player.spriteWidth,
+            player.frameY*player.spriteHeight,
+            player.spriteWidth,
+            player.spriteHeight,
+            player.x,
+            player.y,
+            player.spriteWidth*player.scale,
+            player.spriteHeight*player.scale
+        );
+        if(player.frameX<3) player.frameX++; else player.frameX=0;
+    } else{
+        ctx.fillStyle='#ffcc00';
+        ctx.fillRect(player.x,player.y,player.width,player.height);
+    }
 }
 
 function drawObstacles(){
@@ -119,7 +130,7 @@ function drawBackground(){
 
 // ---------------- Game Functions ----------------
 function spawnObstacle(){
-    const width=Math.random()*50+30;
+    const width=Math.random()*60+30;
     const height=Math.random()*80+30;
     obstacles.push({
         x:canvas.width,
@@ -131,7 +142,7 @@ function spawnObstacle(){
 
 function checkCollision(r){
     for(let ob of obstacles){
-        if(r.x+r.radius>ob.x && r.x<ob.x+ob.width && r.y+r.radius>ob.y && r.y<ob.y+ob.height){
+        if(r.x+r.width>ob.x && r.x<ob.x+ob.width && r.y+r.height>ob.y && r.y<ob.y+ob.height){
             return true;
         }
     }
@@ -148,16 +159,20 @@ function update(){
     // Player physics
     player.dy+=player.gravity;
     player.y+=player.dy;
-    player.squash = Math.min(0.3,player.dy*0.01);
+    player.x+=player.dx;
 
-    if(player.y+player.radius>=canvas.height-70){
-        player.y=canvas.height-70-player.radius;
+    // Boundaries
+    if(player.y+player.height>=canvas.height-70){
+        player.y=canvas.height-70-player.height;
         player.dy=0;
         player.grounded=true;
-        player.squash = 0.2; // bounce effect
+        player.jumpCount=0;
     }else{
         player.grounded=false;
     }
+
+    if(player.x<0) player.x=0;
+    if(player.x+player.width>canvas.width) player.x=canvas.width-player.width;
 
     drawPlayer();
 
@@ -189,22 +204,45 @@ function update(){
 }
 
 // ---------------- Controls ----------------
+let keys={};
 window.addEventListener('keydown',e=>{
-    if((e.code==='Space'||e.code==='ArrowUp')&&player.grounded) player.dy=-player.jumpForce;
-    if(e.code==='KeyR' && gameOver) restartGame();
+    keys[e.code]=true;
+
+    if((e.code==='Space'||e.code==='ArrowUp') && (player.grounded || player.jumpCount<player.maxJumps)){
+        player.dy=-player.jumpForce;
+        player.jumpCount++;
+    }
 });
+window.addEventListener('keyup',e=>{
+    keys[e.code]=false;
+});
+
+function handleMovement(){
+    if(keys['ArrowLeft']) player.dx=-6;
+    else if(keys['ArrowRight']) player.dx=6;
+    else player.dx=0;
+
+    requestAnimationFrame(handleMovement);
+}
+handleMovement();
 
 function restartGame(){
     obstacles=[];
-    player.y=canvas.height-100;
+    player.y=canvas.height-120;
     player.dy=0;
+    player.x=150;
     score=0;
     gameOver=false;
     gameSpeed=6;
+    player.jumpCount=0;
     document.getElementById('score').textContent='Score: 0';
     document.getElementById('gameOver').style.display='none';
     update();
 }
+
+window.addEventListener('keydown',e=>{
+    if(e.code==='KeyR' && gameOver) restartGame();
+});
 
 // Start Game
 update();
