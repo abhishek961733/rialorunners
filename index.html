@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RIALO Runner Ball</title>
+<title>Ultimate RIALO Runner</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:#0b0f14;font-family:sans-serif;}
@@ -47,7 +47,8 @@ let player={
     dy:0,
     gravity:1.2,
     jumpForce:20,
-    grounded:true
+    grounded:true,
+    squash:0
 };
 
 let obstacles=[];
@@ -57,10 +58,9 @@ let gameSpeed=6;
 let score=0;
 let gameOver=false;
 
-// ---------------- Background Layers ----------------
+// ---------------- Background ----------------
 let backgroundLayers=[];
-const numLayers=3;
-for(let i=0;i<numLayers;i++){
+for(let i=0;i<3;i++){
     let layer=[];
     for(let j=0;j<50;j++){
         layer.push({
@@ -68,7 +68,6 @@ for(let i=0;i<numLayers;i++){
             y:Math.random()*canvas.height,
             size:Math.random()*(20-i*5)+5,
             dy:0.2*(i+1),
-            dx:0,
             color:`rgba(0,200,255,${0.05+0.05*i})`
         });
     }
@@ -77,13 +76,16 @@ for(let i=0;i<numLayers;i++){
 
 // ---------------- Draw Functions ----------------
 function drawPlayer(){
-    // Ball with glow
+    // Squash/stretch effect
+    let radiusX=player.radius*(1+player.squash);
+    let radiusY=player.radius*(1-player.squash);
+
     let gradient=ctx.createRadialGradient(player.x+player.radius/2,player.y+player.radius/2,5,player.x+player.radius/2,player.y+player.radius/2,player.radius);
     gradient.addColorStop(0,"#00ffff");
     gradient.addColorStop(1,"#004466");
     ctx.fillStyle=gradient;
     ctx.beginPath();
-    ctx.arc(player.x+player.radius/2,player.y+player.radius/2,player.radius,0,Math.PI*2);
+    ctx.ellipse(player.x+player.radius/2,player.y+player.radius/2,radiusX,radiusY,0,0,Math.PI*2);
     ctx.fill();
     ctx.closePath();
 
@@ -146,10 +148,13 @@ function update(){
     // Player physics
     player.dy+=player.gravity;
     player.y+=player.dy;
+    player.squash = Math.min(0.3,player.dy*0.01);
+
     if(player.y+player.radius>=canvas.height-70){
         player.y=canvas.height-70-player.radius;
         player.dy=0;
         player.grounded=true;
+        player.squash = 0.2; // bounce effect
     }else{
         player.grounded=false;
     }
