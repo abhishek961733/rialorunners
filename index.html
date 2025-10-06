@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Runner Game Top Logo</title>
+<title>Anime Runner Game Next Level</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;overflow:hidden;font-family:sans-serif;background:#0b0f14;}
+html,body{width:100%;height:100%;overflow:hidden;background:#0b0f14;font-family:sans-serif;}
 canvas{display:block;}
 
 /* Score and GameOver UI */
 #score{position:absolute;top:16px;left:16px;font-size:24px;color:#00ffff;text-shadow:1px 1px 3px black;}
 #gameOver{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:36px;color:red;display:none;text-shadow:2px 2px 5px black;text-align:center;}
 
-/* RIALO logo on top */
+/* RIALO Logo on top */
 #logo{
   position:absolute;top:20px;left:50%;transform:translateX(-50%);
   width:120px;height:120px;border-radius:50%;overflow:hidden;
@@ -58,7 +58,7 @@ let player={
 };
 
 let obstacles=[];
-let obstacleInterval=120;
+let obstacleInterval=100; // frames
 let obstacleTimer=0;
 let gameSpeed=6;
 let score=0;
@@ -66,20 +66,24 @@ let gameOver=false;
 
 // ---------------- Load Anime Sprite Sheet ----------------
 player.sprite = new Image();
-player.sprite.src = 'https://i.ibb.co/4Zx6b7x/anime-runner.png'; // Replace with real running sprite sheet
+player.sprite.src = 'https://i.ibb.co/4Zx6b7x/anime-runner.png'; // Replace with real sprite sheet
 
-// ---------------- Floating Background ----------------
-let floatingElements=[];
-const numElements=40;
-for(let i=0;i<numElements;i++){
-    floatingElements.push({
-        x:Math.random()*canvas.width,
-        y:Math.random()*canvas.height,
-        size:Math.random()*30+10,
-        dy:Math.random()*1+0.2,
-        dx:Math.random()*0.5-0.25,
-        color:`rgba(0,200,255,${Math.random()*0.3+0.2})`
-    });
+// ---------------- Background Layers ----------------
+let backgroundLayers=[];
+const numLayers=3;
+for(let i=0;i<numLayers;i++){
+    let layer=[];
+    for(let j=0;j<50;j++){
+        layer.push({
+            x:Math.random()*canvas.width,
+            y:Math.random()*canvas.height,
+            size:Math.random()*(20-i*5)+5,
+            dy:0.2*(i+1),
+            dx:0,
+            color:`rgba(0,200,255,${0.05+0.05*i})`
+        });
+    }
+    backgroundLayers.push(layer);
 }
 
 // ---------------- Draw Functions ----------------
@@ -112,16 +116,15 @@ function drawObstacles(){
 }
 
 function drawBackground(){
-    floatingElements.forEach(el=>{
-        ctx.beginPath();
-        ctx.arc(el.x,el.y,el.size,0,Math.PI*2);
-        ctx.fillStyle=el.color;
-        ctx.fill();
-        el.x+=el.dx;
-        el.y+=el.dy;
-        if(el.y-el.size>canvas.height) el.y=-el.size;
-        if(el.x-el.size>canvas.width) el.x=-el.size;
-        if(el.x+el.size<0) el.x=canvas.width+el.size;
+    backgroundLayers.forEach(layer=>{
+        layer.forEach(el=>{
+            ctx.beginPath();
+            ctx.arc(el.x,el.y,el.size,0,Math.PI*2);
+            ctx.fillStyle=el.color;
+            ctx.fill();
+            el.y+=el.dy;
+            if(el.y-el.size>canvas.height) el.y=-el.size;
+        });
     });
 }
 
@@ -208,7 +211,6 @@ function restartGame(){
 
 // Start Game
 update();
-
 </script>
 </body>
 </html>
